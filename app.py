@@ -289,10 +289,16 @@ if "simulation_result" not in st.session_state:
 
 if "regression_rows" not in st.session_state:
     st.session_state.regression_rows = None
+    st.session_state.previous_regression_rows = None
 
 
 # ---------------- FUNCTIONS ----------------
 def execute_regression_tests():
+    if st.session_state.regression_rows is not None:
+        st.session_state.previous_regression_rows = (
+        st.session_state.regression_rows.copy()
+    )
+
     rows = []
     priority_order = {"CRITICAL": 0, "HIGH": 1, "LOW": 2}
 
@@ -555,7 +561,7 @@ elif page == "Reports & Comparison":
     st.subheader("Before vs After Comparison")
 
     rows = st.session_state.regression_rows
-
+    previous_rows = st.session_state.previous_regression_rows
     before_results = {
         "Emergency Braking": "FAIL",
         "Sudden Obstacle": "FAIL",
@@ -577,7 +583,6 @@ elif page == "Reports & Comparison":
                 "Before Fix": before,
                 "After Fix": after
             })
-
     comparison = pd.DataFrame(comparison_rows)
 
     st.dataframe(
@@ -603,29 +608,7 @@ elif page == "Reports & Comparison":
         st.bar_chart(chart, height=300)
     else:
         st.info("Run Regression Tests first to generate a comparison.")
-
-
-st.success("Before Fix: 3/5 passed · After Fix: 5/5 passed")
-
-rows = st.session_state.regression_rows
-    
-
-st.subheader("Fault Injection Summary")
-
-st.write("Expected result: BRAKE")
-st.write("Faulty software result: CONTINUE")
-
-st.error("Fault detected: FAIL")
-st.warning("Simulated OTA Decision: BLOCKED")
-
-if rows is not None:
-        st.subheader("Latest Test Results")
-        st.dataframe(
-            pd.DataFrame(rows),
-            width="stretch",
-            hide_index=True
-        )
-
+    if rows is not None and len(rows) > 0:
         csv_data = pd.DataFrame(rows).to_csv(index=False).encode("utf-8")
 
         st.download_button(
@@ -634,7 +617,11 @@ if rows is not None:
             file_name="vehicle_regression_report.csv",
             mime="text/csv"
         )
-        
+
+
+    
+
+# ---------------- FAULT INJECTION PAGE ----------------
 # ---------------- FAULT INJECTION PAGE ----------------
 if st.session_state.current_page == "Fault Injection":
     st.title("⚠️ Fault Injection")
@@ -656,10 +643,30 @@ if st.session_state.current_page == "Fault Injection":
 
     if faulty_result != expected:
         st.error("TEST RESULT: FAIL")
-        st.warning("SIMULATED OTA STATUS: BLOCKED")
     else:
         st.success("TEST RESULT: PASS")
 
+    regression_rows = st.session_state.regression_rows
+
+    if regression_rows is None:
+        st.info("Run regression tests before deciding OTA status.")
+        st.warning("SIMULATED OTA STATUS: BLOCKED")
+    else:
+        critical_failures = [
+            row for row in regression_rows
+            if row.get("Priority") == "CRITICAL"
+            and row.get("Test Result") != "PASS"
+        ]
+
+        if faulty_result != expected or critical_failures:
+            st.warning("SIMULATED OTA STATUS: BLOCKED")
+        else:
+            st.success("SIMULATED OTA STATUS: APPROVED")
+
+    if faulty_result != expected or critical_failures:
+        st.warning("SIMULATED OTA STATUS: BLOCKED")
+    else:
+        st.success("SIMULATED OTA STATUS: APPROVED")
 
 
 # ---------------- BOTTOM NAVIGATION ----------------
