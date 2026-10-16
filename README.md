@@ -81,3 +81,6 @@ This is an educational simulation and testing prototype. It is not certified for
 ## Author
 
 Pooja Karthikeyan
+## Dashboard Preview
+
+![Vehicle Trust Validation Dashboard](screenshots/dashboard.png)
