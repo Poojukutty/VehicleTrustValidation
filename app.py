@@ -3,6 +3,33 @@ import streamlit as st
 import pandas as pd
 
 from vehicle import vehicle_safety_system
+import os
+
+REPORT_FILE = "regression_reports.csv"
+
+
+def save_regression_report(rows):
+    if not rows:
+        return
+
+    df = pd.DataFrame(rows)
+
+    if os.path.exists(REPORT_FILE):
+        df.to_csv(
+            REPORT_FILE,
+            mode="a",
+            header=False,
+            index=False
+        )
+    else:
+        df.to_csv(REPORT_FILE, index=False)
+
+
+def load_regression_report():
+    if os.path.exists(REPORT_FILE):
+        return pd.read_csv(REPORT_FILE)
+
+    return pd.DataFrame()
 
 st.set_page_config(
     page_title="Vehicle Trust Validation",
@@ -328,7 +355,7 @@ def execute_regression_tests():
                 "DETECTED" if baseline != updated else "None"
             )
         })
-
+    save_regression_report(rows)
     return rows
 
 
@@ -562,6 +589,11 @@ elif page == "Reports & Comparison":
 
     rows = st.session_state.regression_rows
     previous_rows = st.session_state.previous_regression_rows
+    saved_reports = load_regression_report()
+
+    if rows is None and not saved_reports.empty:
+        rows = saved_reports.to_dict("records")
+
     before_results = {
         "Emergency Braking": "FAIL",
         "Sudden Obstacle": "FAIL",
