@@ -1,11 +1,82 @@
 
 import streamlit as st
 import pandas as pd
+from datetime import datetime
+from database import save_regression_results
+from database import get_regression_history
+
+st.set_page_config(
+    page_title="Vehicle Trust Validation",
+    layout="wide"
+)
+
 
 from vehicle import vehicle_safety_system
 import os
 
 REPORT_FILE = "regression_reports.csv"
+
+
+def calculate_ota_trust(rows, fault_results=None):
+    """
+    Educational simulation only.
+    Calculates a test-based OTA trust score.
+    """
+
+    if not rows:
+        return {
+            "score": 0,
+            "critical_failure": False,
+            "status": "NOT TESTED",
+            "passed": 0,
+            "failed": 0,
+            "total": 0,
+        }
+
+    total = len(rows)
+    passed = sum(
+        row.get("Test Result") == "PASS"
+        for row in rows
+    )
+    failed = total - passed
+
+    critical_scenarios = {
+        "Emergency Braking",
+        "Sudden Obstacle",
+    }
+
+    critical_failure = any(
+        row.get("Scenario") in critical_scenarios
+        and row.get("Test Result") != "PASS"
+        for row in rows
+    )
+
+    # Include fault-injection failures in the OTA decision
+    fault_failed = 0
+    if fault_results is not None:
+        fault_failed = sum(
+            row.get("Test Result") == "FAIL"
+            for row in fault_results
+        )
+
+    score = round((passed / total) * 100)
+
+    if critical_failure or failed > 0 or fault_failed > 0:
+        status = "BLOCKED"
+    else:
+        status = "READY"
+
+    return {
+        "score": score,
+        "critical_failure": critical_failure,
+        "status": status,
+        "passed": passed,
+        "failed": failed,
+        "total": total,
+        "fault_failed": fault_failed,
+    }
+
+
 
 
 def save_regression_report(rows):
@@ -25,18 +96,20 @@ def save_regression_report(rows):
         df.to_csv(REPORT_FILE, index=False)
 
 
+
 def load_regression_report():
     if os.path.exists(REPORT_FILE):
-        return pd.read_csv(REPORT_FILE)
+        try:
+            return pd.read_csv(REPORT_FILE)
+        except pd.errors.ParserError:
+            st.warning(
+                "Saved report has mixed column formats. "
+                "Using the latest valid report is recommended."
+            )
+            return pd.DataFrame()
 
     return pd.DataFrame()
 
-st.set_page_config(
-    page_title="Vehicle Trust Validation",
-    page_icon="🚘",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
 
 # ---------------- LIGHT BLUE AUTOMOTIVE THEME ----------------
 
@@ -325,7 +398,7 @@ def execute_regression_tests():
         st.session_state.previous_regression_rows = (
         st.session_state.regression_rows.copy()
     )
-
+    run_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     rows = []
     priority_order = {"CRITICAL": 0, "HIGH": 1, "LOW": 2}
 
@@ -343,6 +416,7 @@ def execute_regression_tests():
         updated = vehicle_safety_system(speed, distance)
 
         rows.append({
+            "Run Time": run_time,
             "Scenario": scenario["name"],
             "Priority": scenario["priority"],
             "Expected": expected,
@@ -432,6 +506,33 @@ if page == "Dashboard":
         c4.metric("Pass Rate", "—")
     else:
         show_metrics(rows)
+
+        
+    
+   
+    st.divider()
+    st.subheader("OTA Trust Score")
+
+    regression_rows = st.session_state.regression_rows
+
+    if regression_rows is None:
+        st.info("Run Regression Testing to calculate the OTA Trust Score.")
+    else:
+        fault_results = st.session_state.get("fault_results")
+        trust = calculate_ota_trust(regression_rows, fault_results)
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("OTA Trust Score", f"{trust['score']}%")
+        col2.metric("Total Tests", trust["total"])
+        col3.metric("Tests Passed", trust["passed"])
+        col4.metric("Tests Failed", trust["failed"])
+
+        st.progress(trust["score"] / 100)
+
+        if trust["status"] == "BLOCKED":
+            st.error("🚫 Simulated OTA Status: BLOCKED")
+        else:
+            st.success("✓ Simulated OTA Status: READY")
 
     st.divider()
     st.subheader("Vehicle Status")
@@ -537,8 +638,12 @@ elif page == "Driving Simulator":
 elif page == "Regression Testing":
     st.subheader("Automated Regression Testing")
 
-    if st.button("▶ Run Full Regression Tests", type="primary"):
-        st.session_state.regression_rows = execute_regression_tests()
+    
+if st.button("▶ Run Full Regression Tests", type="primary"):
+    st.session_state.regression_rows = execute_regression_tests()
+    st.write("DEBUG — First regression row:", st.session_state.regression_rows[0])
+    save_regression_results(st.session_state.regression_rows)
+    st.success("Regression results saved to database!")
 
     rows = st.session_state.regression_rows
 
@@ -584,11 +689,11 @@ elif page == "Regression Testing":
         )
 
 
+
 elif page == "Reports & Comparison":
     st.subheader("Before vs After Comparison")
 
     rows = st.session_state.regression_rows
-    previous_rows = st.session_state.previous_regression_rows
     saved_reports = load_regression_report()
 
     if rows is None and not saved_reports.empty:
@@ -599,7 +704,7 @@ elif page == "Reports & Comparison":
         "Sudden Obstacle": "FAIL",
         "Missing Sensor Data": "PASS",
         "Invalid Negative Distance": "PASS",
-        "Clear Road": "PASS"
+        "Clear Road": "PASS",
     }
 
     comparison_rows = []
@@ -610,22 +715,62 @@ elif page == "Reports & Comparison":
             after = row.get("Test Result", "NOT TESTED")
             before = before_results.get(scenario, "NOT TESTED")
 
+            if before == "PASS" and after == "FAIL":
+                change = "NEW FAILURE"
+            elif before == "FAIL" and after == "PASS":
+                change = "FIXED"
+            elif before == after:
+                change = "NO CHANGE"
+            else:
+                change = "NEEDS REVIEW"
+
             comparison_rows.append({
                 "Scenario": scenario,
+                "Baseline Version": "v1.0",
+                "Updated Version": "v2.0",
                 "Before Fix": before,
-                "After Fix": after
+                "After Fix": after,
+                "Change": change,
             })
+
     comparison = pd.DataFrame(comparison_rows)
+    st.divider()
+    st.subheader("📚 Regression Test History")
 
-    st.dataframe(
-        comparison,
-        width="stretch",
-        hide_index=True
-    )
+    history = get_regression_history()
 
-    st.subheader("Pass Rate Comparison")
+    if history:
+        history_df = pd.DataFrame(
+            history,
+            columns=[
+                "ID",
+                "Run Time",
+                "Scenario",
+                "Expected",
+                "Actual",
+                "Test Result",
+                "Version",
+            ],
+        )
+
+        st.dataframe(
+            history_df,
+            width="stretch",
+            hide_index=True,
+        )
+    else:
+        st.info("No saved regression history yet. Run the tests first.")
+
 
     if not comparison.empty:
+        st.dataframe(
+            comparison,
+            width="stretch",
+            hide_index=True,
+        )
+
+        st.subheader("Regression Pass Rate Comparison")
+
         before_pass = (comparison["Before Fix"] == "PASS").sum()
         before_fail = (comparison["Before Fix"] == "FAIL").sum()
         after_pass = (comparison["After Fix"] == "PASS").sum()
@@ -634,49 +779,208 @@ elif page == "Reports & Comparison":
         chart = pd.DataFrame({
             "Version": ["Before Fix", "After Fix"],
             "Passed Scenarios": [before_pass, after_pass],
-            "Failed Scenarios": [before_fail, after_fail]
+            "Failed Scenarios": [before_fail, after_fail],
         }).set_index("Version")
 
         st.bar_chart(chart, height=300)
     else:
         st.info("Run Regression Tests first to generate a comparison.")
+
     if rows is not None and len(rows) > 0:
-        csv_data = pd.DataFrame(rows).to_csv(index=False).encode("utf-8")
+        csv_data = pd.DataFrame(rows).to_csv(
+            index=False
+        ).encode("utf-8")
 
         st.download_button(
-            "⬇ Download Latest Report",
+            "⬇ Download Regression Report",
             data=csv_data,
             file_name="vehicle_regression_report.csv",
-            mime="text/csv"
+            mime="text/csv",
         )
+
+    st.divider()
+    st.subheader("Advanced Fault Injection Results")
+
+    from fault_innjection import inject_fault
+
+    fault_cases = [
+        {
+            "Scenario": "Braking Failure",
+            "Speed": 40,
+            "Distance": 5,
+            "Fault": "BRAKING_FAILURE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Sensor Failure",
+            "Speed": 30,
+            "Distance": None,
+            "Fault": "SENSOR_FAILURE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Delayed Response",
+            "Speed": 50,
+            "Distance": 3,
+            "Fault": "DELAYED_RESPONSE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Normal Operation",
+            "Speed": 40,
+            "Distance": 20,
+            "Fault": "NORMAL",
+            "Expected": "CONTINUE",
+        },
+    ]
+
+    fault_rows = []
+
+    for case in fault_cases:
+        actual = inject_fault(
+            case["Speed"],
+            case["Distance"],
+            case["Fault"],
+        )
+
+        fault_rows.append({
+            "Scenario": case["Scenario"],
+            "Expected": case["Expected"],
+            "Actual": actual,
+            "Test Result": (
+                "PASS" if actual == case["Expected"] else "FAIL"
+            ),
+        })
+
+    fault_df = pd.DataFrame(fault_rows)
+
+    st.dataframe(
+        fault_df,
+        width="stretch",
+        hide_index=True,
+    )
+
+    fault_passed = (fault_df["Test Result"] == "PASS").sum()
+    fault_failed = (fault_df["Test Result"] == "FAIL").sum()
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Fault Tests", len(fault_df))
+    col2.metric("Passed", int(fault_passed))
+    col3.metric("Failed", int(fault_failed))
+
+    fault_csv = fault_df.to_csv(index=False).encode("utf-8")
+
+    st.download_button(
+        "⬇ Download Fault Report",
+        data=fault_csv,
+        file_name="vehicle_fault_report.csv",
+        mime="text/csv",
+    )
 
 
     
 
 # ---------------- FAULT INJECTION PAGE ----------------
 # ---------------- FAULT INJECTION PAGE ----------------
+
 if st.session_state.current_page == "Fault Injection":
-    st.title("⚠️ Fault Injection")
-    st.write("Demonstrate how an intentional software fault is detected.")
-
-    speed = 40
-    obstacle_distance = 5
-    expected = "BRAKE"
-
+    import pandas as pd
     from fault_innjection import inject_fault
 
-    faulty_result = inject_fault(speed, obstacle_distance)
+    st.title("⚠️ Fault Injection")
+    st.write(
+        "Demonstrate how intentional software faults "
+        "are detected during regression validation."
+    )
 
-    st.subheader("Test Scenario")
-    st.write(f"Speed: {speed} km/h")
-    st.write(f"Obstacle distance: {obstacle_distance} m")
-    st.write(f"Expected result: {expected}")
-    st.write(f"Faulty result: {faulty_result}")
+    test_cases = [
+        {
+            "Scenario": "Braking Failure",
+            "Speed": 40,
+            "Distance": 5,
+            "Fault": "BRAKING_FAILURE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Sensor Failure",
+            "Speed": 30,
+            "Distance": None,
+            "Fault": "SENSOR_FAILURE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Delayed Response",
+            "Speed": 50,
+            "Distance": 3,
+            "Fault": "DELAYED_RESPONSE",
+            "Expected": "BRAKE",
+        },
+        {
+            "Scenario": "Normal Operation",
+            "Speed": 40,
+            "Distance": 20,
+            "Fault": "NORMAL",
+            "Expected": "CONTINUE",
+        },
+    ]
 
-    if faulty_result != expected:
-        st.error("TEST RESULT: FAIL")
-    else:
-        st.success("TEST RESULT: PASS")
+    results = []
+
+    for case in test_cases:
+        actual = inject_fault(
+            case["Speed"],
+            case["Distance"],
+            case["Fault"],
+        )
+
+        passed = actual == case["Expected"]
+
+        results.append({
+            "Scenario": case["Scenario"],
+            "Speed (km/h)": case["Speed"],
+            "Distance (m)": (
+                case["Distance"]
+                if case["Distance"] is not None
+                else "Missing"
+            ),
+            "Expected": case["Expected"],
+            "Actual": actual,
+            "Test Result": "PASS" if passed else "FAIL",
+        })
+
+    st.subheader("Advanced Fault Scenarios")
+    results_df = pd.DataFrame(results)
+
+    st.session_state.fault_results = results
+
+    st.download_button(
+        label="⬇️ Download Fault Report",
+        data=results_df.to_csv(index=False).encode("utf-8"),
+        file_name="vehicle_fault_report.csv",
+        mime="text/csv",
+    )
+
+    st.dataframe(
+        results_df,
+        width="stretch",
+        hide_index=True,
+    )
+
+    passed_count = sum(
+        row["Test Result"] == "PASS" for row in results
+    )
+    failed_count = len(results) - passed_count
+    pass_rate = (passed_count / len(results)) * 100
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Tests", len(results))
+    col2.metric("Passed", passed_count)
+    col3.metric("Failed", failed_count)
+
+    st.progress(pass_rate / 100)
+    st.caption(f"Pass rate: {pass_rate:.0f}%")
+
+    st.subheader("Simulated OTA Decision")
 
     regression_rows = st.session_state.regression_rows
 
@@ -690,15 +994,19 @@ if st.session_state.current_page == "Fault Injection":
             and row.get("Test Result") != "PASS"
         ]
 
-        if faulty_result != expected or critical_failures:
+        fault_failures = [
+            row for row in results
+            if row["Test Result"] != "PASS"
+        ]
+
+        if critical_failures or fault_failures:
             st.warning("SIMULATED OTA STATUS: BLOCKED")
+            st.write(
+                "Reason: One or more critical regression or "
+                "fault-injection tests failed."
+            )
         else:
             st.success("SIMULATED OTA STATUS: APPROVED")
-
-    if faulty_result != expected or critical_failures:
-        st.warning("SIMULATED OTA STATUS: BLOCKED")
-    else:
-        st.success("SIMULATED OTA STATUS: APPROVED")
 
 
 # ---------------- BOTTOM NAVIGATION ----------------
