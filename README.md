@@ -1,40 +1,47 @@
 # Vehicle Trust Validation
 
-A Python-based simulation and regression testing project designed to validate vehicle software behavior before and after software updates in Software-Defined Vehicles (SDVs).
+A Python-based simulation and regression testing project designed to validate safety-critical behaviour in Software-Defined Vehicles (SDVs).
 
-## Project Overview
+The project simulates vehicle driving scenarios, evaluates safety responses, performs regression testing, injects faults, and compares test results to support software update validation.
 
-Vehicle Trust Validation simulates vehicle scenarios and checks whether the software responds as expected. It uses automated regression tests to identify failures, detect injected faults, and help determine whether a software update should be accepted or blocked.
+## 🚗 Key Features
 
-## Key Features
+- **Driving Simulator** – Simulate vehicle speed, obstacle distance, and missing sensor data.
+- **Automated Regression Testing** – Execute predefined scenarios and evaluate expected versus actual results.
+- **Fault Injection** – Simulate faults to examine vehicle safety behaviour.
+- **Test Coverage** – Review the available validation scenarios.
+- **Before vs After Comparison** – Compare baseline and updated software test results.
+- **Regression History** – View previously saved test results.
+- **Visual Reports** – Review regression comparison tables and pass/fail charts.
+- **CSV Export** – Download regression test reports.
+- **OTA Trust Score** – Display a simulated trust score and update readiness status.
 
-- **Driving Scenario Simulation:** Tests vehicle behavior under different road and sensor conditions.
-- **Automated Regression Testing:** Compares actual results against expected results.
-- **Fault Injection:** Simulates software faults to identify safety-related failures.
-- **Test Coverage:** Summarizes the number of scenarios tested.
-- **OTA Update Validation:** Uses test results to determine whether an update should be blocked.
-- **Interactive Dashboard:** Displays simulation and testing results through Streamlit.
+## 🧪 Test Scenarios
 
-## Technologies Used
+The project includes the following scenarios:
+
+1. Emergency Braking
+2. Sudden Obstacle Detection
+3. Missing Sensor Data
+4. Invalid Negative Distance
+5. Clear Road
+
+Each scenario helps evaluate the vehicle software's response under different simulated conditions.
+
+## 🛠️ Technologies Used
 
 - Python
 - Streamlit
-- Automated Software Testing
-- Regression Testing
+- Pandas
+- Automated Regression Testing
 - Fault Injection
 - Git and GitHub
 
-## Test Scenarios
+## 📸 Dashboard Preview
 
-The project includes scenarios such as:
+![Vehicle Trust Validation Dashboard](screenshots/dashboard.png)
 
-- Emergency braking
-- Sudden obstacle detection
-- Missing sensor data
-- Invalid negative distance
-- Clear road conditions
-
-## Getting Started
+## ⚙️ Installation and Setup
 
 ### 1. Clone the repository
 
@@ -42,7 +49,7 @@ The project includes scenarios such as:
 git clone https://github.com/Poojukutty/VehicleTrustValidation.git
 ```
 
-### 2. Open the project folder
+### 2. Navigate to the project directory
 
 ```bash
 cd VehicleTrustValidation
@@ -54,33 +61,36 @@ cd VehicleTrustValidation
 python -m pip install -r requirements.txt
 ```
 
-### 4. Run the dashboard
+### 4. Run the application
 
 ```bash
 python -m streamlit run app.py
 ```
 
-The dashboard should open in your browser.
+The application will open in your browser using the local Streamlit server address.
 
-## Project Goal
+## 📊 Project Workflow
 
-The goal is to demonstrate how automated regression testing can help identify software defects and support safer validation of software updates in Software-Defined Vehicles.
+1. Select or run a vehicle simulation scenario.
+2. Evaluate expected and actual vehicle responses.
+3. Execute regression tests.
+4. Review test history and before/after comparisons.
+5. Analyse the regression pass/fail chart.
+6. Download test reports as CSV.
+7. Review the simulated OTA Trust Score and readiness status.
 
-## Future Enhancements
+## 🔮 Future Enhancements
 
-- Integration with a driving simulator
-- Expanded vehicle and sensor test scenarios
-- Before-and-after software update comparisons
-- Detailed test reports and visualizations
-- Improved fault detection and validation
+- Integration with a driving simulator.
+- Additional safety validation scenarios.
+- More detailed regression reports and visualisations.
+- Enhanced fault detection and safety validation.
 
-## Disclaimer
+## ⚠️ Disclaimer
 
-This is an educational simulation and testing prototype. It is not certified for use in real vehicles and does not replace automotive safety validation.
+This project is an educational prototype for software testing and vehicle safety validation concepts. It is not certified for use in real vehicles or production automotive systems.
 
-## Author
+## 👩‍💻 Author
 
-Pooja Karthikeyan
-## Dashboard Preview
-
-![Vehicle Trust Validation Dashboard](screenshots/dashboard.png)
+**Pooja Karthikeyan**  
+B.Tech Information Technology
