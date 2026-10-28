@@ -3,5 +3,6 @@ __pycache__/
 vehicle_trust.db
 *.db-journal
 app_backup*.py
+regression_reports.csv
 regression_reports_backup.csv
 regression_reports_mixed_old.csv
