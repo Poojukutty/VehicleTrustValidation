@@ -24,7 +24,10 @@ def initialize_database():
         """)
 
 
+
 def save_regression_results(results):
+    run_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     with get_connection() as connection:
         for row in results:
             connection.execute("""
@@ -38,13 +41,14 @@ def save_regression_results(results):
                 )
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                run_time,
                 row.get("Scenario", "Unknown"),
                 row.get("Expected", "Unknown"),
                 row.get("Updated", row.get("Actual", "Unknown")),
                 row.get("Test Result", "NOT TESTED"),
                 "v2.0"
             ))
+
 
 
 def get_regression_history():

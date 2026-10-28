@@ -119,7 +119,7 @@ st.markdown("""
 /* LIGHT BACKGROUND */
 .stApp,
 [data-testid="stAppViewContainer"] {
-    background-color: #F5F9FF !important;
+    background-color: #B8D4F0 !important;
     color: #172B4D !important;
 }
 
