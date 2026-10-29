@@ -114,166 +114,122 @@ def load_regression_report():
 # ---------------- LIGHT BLUE AUTOMOTIVE THEME ----------------
 
 
-st.markdown("""
-<style>
-/* LIGHT BACKGROUND */
-.stApp,
-[data-testid="stAppViewContainer"] {
-    background-color: #B8D4F0 !important;
-    color: #172B4D !important;
-}
 
 
-/* ALL TEXT — BOLD AND CLEAR */
-html, body, p, span, label, li, div,
-.stMarkdown, .stText,
-[data-testid="stMarkdownContainer"],
-[data-testid="stMarkdownContainer"] p,
-[data-testid="stWidgetLabel"] p {
-    color: #172B4D !important;
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    line-height: 1.65 !important;
-    opacity: 1 !important;
-}
 
-/* HEADINGS — EXTRA BOLD */
-h1 {
-    color: #123B63 !important;
-    font-size: 40px !important;
-    font-weight: 800 !important;
-}
-h2 {
-    color: #174F80 !important;
-    font-size: 32px !important;
-    font-weight: 800 !important;
-}
-h3 {
-    color: #174F80 !important;
-    font-size: 25px !important;
-    font-weight: 750 !important;
-}
+st.markdown(
+    """
+    <style>
+    /* MAIN BACKGROUND */
+    .stApp {
+        background-color: #F4F8FC;
+        color: #17324D;
+    }
 
-/* BUTTON TEXT — BOLD */
-.stButton button,
-.stDownloadButton button {
-    font-size: 18px !important;
-    font-weight: 800 !important;
-}
+    [data-testid="stHeader"] {
+        background-color: #F4F8FC;
+    }
 
+    /* HIDE SIDEBAR - KEEP EXISTING NAVIGATION */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
 
-/* HEADINGS */
-h1 {
-    color: #123B63 !important;
-    font-size: 40px !important;
-    font-weight: 800 !important;
-}
-h2 {
-    color: #174F80 !important;
-    font-size: 32px !important;
-    font-weight: 750 !important;
-}
-h3 {
-    color: #174F80 !important;
-    font-size: 25px !important;
-    font-weight: 700 !important;
-}
+    /* TEXT */
+    .stApp p,
+    .stApp label,
+    .stApp li,
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stWidgetLabel"] p {
+        color: #17324D !important;
+        font-weight: 500 !important;
+    }
 
-/* SIDEBAR TEXT, IF SHOWN */
-[data-testid="stSidebar"] * {
-    color: #172B4D !important;
-}
+    /* HEADINGS */
+    h1, h2, h3 {
+        color: #174F80 !important;
+        font-weight: 800 !important;
+    }
 
-/* METRIC CARDS */
-[data-testid="stMetric"] {
-    background: #FFFFFF !important;
-    border: 1px solid #C5DDF5 !important;
-    border-radius: 14px !important;
-    padding: 22px !important;
-}
-[data-testid="stMetricLabel"],
-[data-testid="stMetricLabel"] p {
-    color: #243B53 !important;
-    font-size: 17px !important;
-}
-[data-testid="stMetricValue"],
-[data-testid="stMetricValue"] div {
-    color: #0759A5 !important;
-    font-size: 36px !important;
-    font-weight: 800 !important;
-}
+    /* METRIC CARDS */
+    [data-testid="stMetric"] {
+        background-color: #FFFFFF !important;
+        border: 1px solid #C5DDF5 !important;
+        border-radius: 14px !important;
+        padding: 18px !important;
+    }
 
-/* BUTTONS */
-.stButton button,
-.stDownloadButton button {
-    background: #DCEEFF !important;
-    color: #123B63 !important;
-    border: 2px solid #83B5E5 !important;
-    border-radius: 10px !important;
-    min-height: 52px !important;
-    font-size: 18px !important;
-    font-weight: 750 !important;
-    opacity: 1 !important;
-}
-.stButton button:hover,
-.stDownloadButton button:hover {
-    background: #BBDFFF !important;
-    color: #102F50 !important;
-    border-color: #367DB8 !important;
-}
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricLabel"] p {
+        color: #174F80 !important;
+    }
 
-/* PRIMARY BUTTON */
-.stButton button[kind="primary"] {
-    background: #1769AA !important;
-    color: #FFFFFF !important;
-    border-color: #1769AA !important;
-}
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricValue"] div {
+        color: #0759A5 !important;
+        font-weight: 800 !important;
+    }
 
-/* SLIDERS AND CHECKBOXES */
-[data-testid="stSlider"] *,
-[data-testid="stCheckbox"] * {
-    color: #172B4D !important;
-    font-size: 17px !important;
-}
+    /* BUTTONS */
+    .stButton button,
+    .stDownloadButton button {
+        background-color: #DCEEFF !important;
+        color: #123B63 !important;
+        border: 1px solid #83B5E5 !important;
+        border-radius: 8px !important;
+        font-weight: 800 !important;
+    }
 
-/* TABLE TEXT */
-[data-testid="stDataFrame"] {
-    background: #FFFFFF !important;
-}
-[data-testid="stDataFrame"] * {
-    font-size: 16px !important;
-}
+    .stButton button p,
+    .stDownloadButton button p {
+        color: #123B63 !important;
+        font-weight: 800 !important;
+    }
 
-/* REMOVE EXTRA SIDEBAR */
-[data-testid="stSidebar"] {
-    display: none !important;
-}
+    .stButton button:hover,
+    .stDownloadButton button:hover {
+        background-color: #BBDFFF !important;
+        border-color: #367DB8 !important;
+    }
 
-/* HEADER */
-.car-header {
-    background: #E6F2FF !important;
-    border: 1px solid #BFD9F2 !important;
-    border-radius: 16px !important;
-    padding: 28px !important;
-}
+    .stButton button[kind="primary"] {
+        background-color: #1769AA !important;
+        color: #FFFFFF !important;
+    }
 
-/* ROAD SIMULATION */
-.car-road {
-    position: relative;
-    height: 190px;
-    background: #E2EAF3;
-    border: 1px solid #B8CDDF;
-    border-radius: 14px;
-    overflow: hidden;
-    margin: 18px 0;
-}
-.road-line {
-    position: absolute;
-    top: 92px;
-    width: 100%;
-    border-top: 3px dashed #FFFFFF;
-}
+    .stButton button[kind="primary"] p {
+        color: #FFFFFF !important;
+    }
 
+    /* VEHICLE HEADER */
+    .car-header {
+        background-color: #FFFFFF !important;
+        color: #17324D !important;
+        border: 1px solid #C5DDF5 !important;
+        border-radius: 14px !important;
+        padding: 24px !important;
+    }
+
+    /* ROAD SIMULATION */
+    .car-road {
+        background-color: #E2EAF3;
+        border: 1px solid #B8CDDF;
+        border-radius: 14px;
+    }
+
+    .road-label {
+        color: #17324D !important;
+    }
+
+    .car.braking {
+        filter: drop-shadow(0 0 8px #E53935);
+    }
+
+    .car-road.brake-mode {
+        border: 2px solid #E53935;
+    }
+    
+/* RESTORE CAR ANIMATION */
 .car {
     position: absolute;
     top: 58px;
@@ -282,40 +238,35 @@ h3 {
     animation: drive 3s ease-in-out infinite alternate;
 }
 
+@keyframes drive {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100px);
+    }
+}
+
 .car.braking {
     animation: brake 0.7s ease-out forwards !important;
     filter: drop-shadow(0 0 8px #E53935);
 }
 
-.car-road.brake-mode {
-    border: 2px solid #E53935;
-}
-
 @keyframes brake {
-    from { transform: translateX(100px); }
-    to { transform: translateX(15px); }
+    from {
+        transform: translateX(100px);
+    }
+    to {
+        transform: translateX(15px);
+    }
 }
 
-.obstacle {
-    position: absolute;
-    top: 62px;
-    right: 12%;
-    font-size: 38px;
-}
-.road-label {
-    position: absolute;
-    bottom: 10px;
-    left: 14px;
-    color: #172B4D !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-}
-@keyframes drive {
-    from { transform: translateX(0); }
-    to { transform: translateX(100px); }
-}
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 
 
 
