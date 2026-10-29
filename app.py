@@ -6,7 +6,7 @@ from database import save_regression_results
 from database import get_regression_history
 
 st.set_page_config(
-    page_title="Vehicle Trust Validation",
+    page_title="VeloTrust",
     layout="wide"
 )
 
@@ -228,39 +228,6 @@ st.markdown(
     .car-road.brake-mode {
         border: 2px solid #E53935;
     }
-    
-/* RESTORE CAR ANIMATION */
-.car {
-    position: absolute;
-    top: 58px;
-    left: 5%;
-    font-size: 52px;
-    animation: drive 3s ease-in-out infinite alternate;
-}
-
-@keyframes drive {
-    from {
-        transform: translateX(0);
-    }
-    to {
-        transform: translateX(100px);
-    }
-}
-
-.car.braking {
-    animation: brake 0.7s ease-out forwards !important;
-    filter: drop-shadow(0 0 8px #E53935);
-}
-
-@keyframes brake {
-    from {
-        transform: translateX(100px);
-    }
-    to {
-        transform: translateX(15px);
-    }
-}
-
     </style>
     """,
     unsafe_allow_html=True
@@ -433,7 +400,7 @@ def show_car(speed, distance, result="READY"):
 # ---------------- HEADER ----------------
 st.markdown("""
 <div class="car-header">
-    <h1 style="margin:0;">🚘 Vehicle Trust Validation</h1>
+    <h1 style="margin:0;">🚘 VeloTrust</h1>
     <p style="margin:8px 0 0 0;">
         Driving Simulation · Software Testing · Regression Analysis
     </p>
