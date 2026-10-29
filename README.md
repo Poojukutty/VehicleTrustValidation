@@ -90,6 +90,10 @@ The application will open in your browser using the local Streamlit server addre
 
 This project is an educational prototype for software testing and vehicle safety validation concepts. It is not certified for use in real vehicles or production automotive systems.
 
+## 🚀 Live Demo
+
+Try VeloTrust here: https://velotrust.streamlit.app
+
 ## 👩‍💻 Author
 
 **Pooja Karthikeyan**  
