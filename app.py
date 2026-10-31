@@ -4,10 +4,13 @@ import pandas as pd
 from datetime import datetime
 from database import save_regression_results
 from database import get_regression_history
+from PIL import Image
+
+logo = Image.open("assets/velotrust_logo.png")
 
 st.set_page_config(
     page_title="VeloTrust",
-    page_icon="assets/velotrust_logo.png",
+    page_icon=logo,
     layout="wide"
 )
 
