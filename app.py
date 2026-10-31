@@ -10,7 +10,7 @@ logo = Image.open("assets/velotrust_logo.png")
 
 st.set_page_config(
     page_title="VeloTrust",
-    page_icon=logo,
+    page_icon="assets/velotrust_logo.png",   
     layout="wide"
 )
 
