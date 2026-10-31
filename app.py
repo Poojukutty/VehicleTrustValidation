@@ -7,6 +7,7 @@ from database import get_regression_history
 
 st.set_page_config(
     page_title="VeloTrust",
+    page_icon="assets/velotrust_logo.png",
     layout="wide"
 )
 
@@ -398,15 +399,20 @@ def show_car(speed, distance, result="READY"):
 
 
 # ---------------- HEADER ----------------
-st.markdown("""
-<div class="car-header">
-    <h1 style="margin:0;">🚘 VeloTrust</h1>
-    <p style="margin:8px 0 0 0;">
-        Driving Simulation · Software Testing · Regression Analysis
-    </p>
-</div>
-""", unsafe_allow_html=True)
+col1, col2 = st.columns([1, 5], vertical_alignment="center")
 
+with col1:
+    st.image("assets/velotrust_logo.png", width=110)
+
+with col2:
+    st.markdown("""
+    <div class="car-header">
+        <h1 style="margin:0;">VeloTrust</h1>
+        <p style="margin:8px 0 0 0;">
+            Driving Simulation · Software Testing · Regression Analysis
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ---------------- PAGE CONTENT ----------------
 page = st.session_state.current_page
